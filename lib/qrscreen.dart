@@ -80,7 +80,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
               ],
             )),
             child: Padding(
-              padding: const EdgeInsets.all(40.0),
+              padding: const EdgeInsets.only(right: 40.0, left: 40.0),
               child: Center(
                 child: SingleChildScrollView(
                   child: Container(
@@ -94,7 +94,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                     height: 330,
                     child: Padding(
                       padding: const EdgeInsets.only(
-                          top: 30, right: 20, bottom: 30, left: 20),
+                          top: 20, right: 20, bottom: 20, left: 20),
                       child: Form(
                         key: _formkey,
                         child: Column(
@@ -138,7 +138,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                               ),
                             ),
                             const SizedBox(
-                              height: 30,
+                              height: 20,
                             ),
                             const Align(
                               alignment: Alignment.bottomLeft,
@@ -190,7 +190,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                               },
                             ),
                             const SizedBox(
-                              height: 30,
+                              height: 20,
                             ),
                             ElevatedButton(
                                 onPressed: () async {
@@ -269,42 +269,31 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                                                                       height: 0,
                                                                     )
                                                                   : Container(
-                                                                      height: 0,
+                                                                      height:
+                                                                          10,
                                                                     ),
-                                                              qrData.isEmpty
-                                                                  ? Container(
-                                                                      height: 0,
-                                                                    )
-                                                                  : Text(
-                                                                      qrData,
-                                                                      textAlign:
-                                                                          TextAlign
-                                                                              .center,
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                      maxLines:
-                                                                          3,
-                                                                      style: const TextStyle(
-                                                                          height:
-                                                                              1,
-                                                                          fontSize:
-                                                                              14,
-                                                                          color: Colors
-                                                                              .black,
-                                                                          fontWeight:
-                                                                              FontWeight.normal),
-                                                                    ),
+                                                              Text(
+                                                                qrData,
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                maxLines: 3,
+                                                                style: const TextStyle(
+                                                                    height: 1,
+                                                                    fontSize:
+                                                                        14,
+                                                                    color: Colors
+                                                                        .black,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .normal),
+                                                              ),
                                                               QrImageView(
                                                                 data: qrData,
-                                                                // embeddedImage:
-                                                                //     const AssetImage(
-                                                                //         'assets/logo/logo_qrcode_gen.png'),
-                                                                // embeddedImageStyle:
-                                                                //     const QrEmbeddedImageStyle(
-                                                                //   size: Size(
-                                                                //       40, 40),
-                                                                // ),
+
                                                                 eyeStyle: const QrEyeStyle(
                                                                     eyeShape:
                                                                         QrEyeShape
