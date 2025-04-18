@@ -4,7 +4,6 @@ import 'package:sizer/sizer.dart';
 
 void main() {
   runApp(const MainApp());
-  ResponsiveBuild;
 }
 
 class MainApp extends StatelessWidget {

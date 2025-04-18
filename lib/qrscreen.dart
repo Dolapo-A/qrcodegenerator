@@ -1,11 +1,16 @@
+// ignore_for_file: avoid_print
+
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_image_gallery_saver/flutter_image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qrcodegenerator/widgets/Button.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sizer/sizer.dart';
 
@@ -38,6 +43,218 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
   final TextEditingController _qrCodeName = TextEditingController();
   final TextEditingController _urlLink = TextEditingController();
   String qrData = '';
+
+  void showFailureSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(top: 10, left: 10, right: 10),
+      ),
+    );
+  }
+
+  void showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
+      ),
+    );
+  }
+
+  shareQRCode() async {
+    RenderRepaintBoundary boundary =
+        key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+
+    var image = await boundary.toImage(pixelRatio: 2.0);
+
+    ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
+
+    Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+    final appDir = await getApplicationDocumentsDirectory();
+
+    var datetime = DateTime.now().toString().substring(0, 10);
+
+    String firstThreeLetters = qrData.substring(0, 1);
+
+    file =
+        await File('${appDir.path}\\$firstThreeLetters $datetime.png').create();
+
+    //appending data
+    await file?.writeAsBytes(pngBytes);
+
+    await Share.shareXFiles(
+      file != null ? [XFile(file!.path)] : [],
+      // [file!.path],
+      subject: datetime,
+    );
+  }
+
+  downloadQRCode() async {
+    try {
+      RenderRepaintBoundary boundary =
+          key.currentContext!.findRenderObject() as RenderRepaintBoundary;
+
+      var image = await boundary.toImage(pixelRatio: 2.0);
+
+      ByteData? byteData = await image.toByteData(format: ImageByteFormat.png);
+
+      Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+      if (Platform.isAndroid) {
+        var status = await Permission.storage.request();
+        if (!status.isGranted) {
+          print("Storage permission Denied");
+          return;
+        }
+      }
+
+      final result = await FlutterImageGallerySaver.saveImage(
+        pngBytes,
+      );
+
+      showSuccessSnackBar("${_qrCodeName.text}_Qrcode Saved to Gallery");
+
+      // if (result['isSuccess']) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(
+      //       content: Text("${_qrCodeName.text}_Qrcode Saved to Gallery"),
+      //       backgroundColor: Colors.green,
+      //     ),
+      //   );
+      // } else {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(
+      //       content: Text("Unable to save ${_qrCodeName.text}_Qrcode"),
+      //       backgroundColor: Colors.red,
+      //     ),
+      //   );
+      // }
+    } catch (e) {
+      print(e);
+      showFailureSnackBar(e.toString());
+    }
+  }
+
+  void _showQRCodeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.only(
+                top: 10.0, right: 30, bottom: 10, left: 30),
+            // ignore: sized_box_for_whitespace
+            child: SingleChildScrollView(
+              child: SizedBox(
+                width: 35.w,
+                height: 400,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 0, bottom: 0),
+                      child: RepaintBoundary(
+                        key: key,
+                        child: Container(
+                          color: Colors.white,
+                          child: Column(
+                            children: [
+                              _qrCodeName.text.isEmpty
+                                  ? Container(
+                                      height: 0,
+                                    )
+                                  : Text(
+                                      _qrCodeName.text,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          height: 1,
+                                          fontSize: 22,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w700),
+                                    ),
+                              _qrCodeName.text.isEmpty && qrData.isEmpty
+                                  ? Container(
+                                      height: 0,
+                                    )
+                                  : Container(
+                                      height: 10,
+                                    ),
+                              Text(
+                                qrData,
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 3,
+                                style: const TextStyle(
+                                    height: 1,
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.normal),
+                              ),
+                              QrImageView(
+                                data: qrData,
+
+                                eyeStyle: const QrEyeStyle(
+                                    eyeShape: QrEyeShape.square,
+                                    color: Colors.blue),
+                                // data: _QRCodeName.text,
+                                version: QrVersions.auto,
+                                size: 200.0,
+                                errorStateBuilder: (cxt, err) {
+                                  return const Center(
+                                    child: Text(
+                                      'Uh oh! Something went wrong...',
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 500),
+                      child: CustomElevatedButton(
+                          icon: Icons.ios_share,
+                          label: 'Share',
+                          onPressed: () => {shareQRCode()}),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 500),
+                      child: CustomElevatedButton(
+                          icon: Icons.download,
+                          label: 'Download',
+                          onPressed: () => {downloadQRCode()}),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +401,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                               ),
                               validator: (value) {
                                 if (value!.isEmpty) {
-                                  return 'This field is required';
+                                  return 'Enter a valid URL';
                                 }
                                 return null;
                               },
@@ -192,217 +409,18 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                             const SizedBox(
                               height: 20,
                             ),
-                            ElevatedButton(
-                                onPressed: () async {
-                                  setState(() {
-                                    qrData = _urlLink.text;
-                                  });
+                            CustomElevatedButton(
+                              label: "Generate QRCode",
+                              onPressed: () async {
+                                setState(() {
+                                  qrData = _urlLink.text;
+                                });
 
-                                  if (_formkey.currentState!.validate()) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return Dialog(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 10.0,
-                                                right: 30,
-                                                bottom: 10,
-                                                left: 30),
-                                            // ignore: sized_box_for_whitespace
-                                            child: SingleChildScrollView(
-                                              child: SizedBox(
-                                                width: 35.w,
-                                                height: 350,
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              top: 0,
-                                                              bottom: 0),
-                                                      child: RepaintBoundary(
-                                                        key: key,
-                                                        child: Container(
-                                                          color: Colors.white,
-                                                          child: Column(
-                                                            children: [
-                                                              _qrCodeName.text
-                                                                      .isEmpty
-                                                                  ? Container(
-                                                                      height: 0,
-                                                                    )
-                                                                  : Text(
-                                                                      _qrCodeName
-                                                                          .text,
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                      maxLines:
-                                                                          2,
-                                                                      textAlign:
-                                                                          TextAlign
-                                                                              .center,
-                                                                      style: const TextStyle(
-                                                                          height:
-                                                                              1,
-                                                                          fontSize:
-                                                                              22,
-                                                                          color: Colors
-                                                                              .black,
-                                                                          fontWeight:
-                                                                              FontWeight.w700),
-                                                                    ),
-                                                              _qrCodeName.text
-                                                                          .isEmpty &&
-                                                                      qrData
-                                                                          .isEmpty
-                                                                  ? Container(
-                                                                      height: 0,
-                                                                    )
-                                                                  : Container(
-                                                                      height:
-                                                                          10,
-                                                                    ),
-                                                              Text(
-                                                                qrData,
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .center,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                maxLines: 3,
-                                                                style: const TextStyle(
-                                                                    height: 1,
-                                                                    fontSize:
-                                                                        14,
-                                                                    color: Colors
-                                                                        .black,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .normal),
-                                                              ),
-                                                              QrImageView(
-                                                                data: qrData,
-
-                                                                eyeStyle: const QrEyeStyle(
-                                                                    eyeShape:
-                                                                        QrEyeShape
-                                                                            .square,
-                                                                    color: Colors
-                                                                        .blue),
-                                                                // data: _QRCodeName.text,
-                                                                version:
-                                                                    QrVersions
-                                                                        .auto,
-                                                                backgroundColor:
-                                                                    Colors
-                                                                        .white,
-                                                                size: 200.0,
-                                                                errorStateBuilder:
-                                                                    (cxt, err) {
-                                                                  return const Center(
-                                                                    child: Text(
-                                                                      'Uh oh! Something went wrong...',
-                                                                      textAlign:
-                                                                          TextAlign
-                                                                              .center,
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 5,
-                                                    ),
-                                                    ElevatedButton.icon(
-                                                        onPressed: () async {
-                                                          RenderRepaintBoundary
-                                                              boundary =
-                                                              key.currentContext!
-                                                                      .findRenderObject()
-                                                                  as RenderRepaintBoundary;
-
-                                                          var image =
-                                                              await boundary
-                                                                  .toImage(
-                                                                      pixelRatio:
-                                                                          2.0);
-
-                                                          ByteData? byteData =
-                                                              await image.toByteData(
-                                                                  format:
-                                                                      ImageByteFormat
-                                                                          .png);
-
-                                                          Uint8List pngBytes =
-                                                              byteData!.buffer
-                                                                  .asUint8List();
-
-                                                          final appDir =
-                                                              await getApplicationDocumentsDirectory();
-
-                                                          var datetime =
-                                                              DateTime.now()
-                                                                  .toString()
-                                                                  .substring(
-                                                                      0, 10);
-                                                          // String imagePath = Platform
-                                                          //         .isWindows
-                                                          //     ? '${appDir.path}\\$datetime.png'
-                                                          //     : '${appDir.path}/$datetime.png';
-
-                                                          String
-                                                              firstThreeLetters =
-                                                              qrData.substring(
-                                                                  0, 1);
-
-                                                          file = await File(
-                                                                  '${appDir.path}\\$firstThreeLetters $datetime.png')
-                                                              .create();
-
-                                                          //appending data
-                                                          await file
-                                                              ?.writeAsBytes(
-                                                                  pngBytes);
-
-                                                          await Share
-                                                              .shareFiles(
-                                                            [file!.path],
-                                                            subject: datetime,
-                                                            mimeTypes: [
-                                                              "image/png"
-                                                            ],
-                                                          );
-                                                        },
-                                                        icon: const Icon(
-                                                            Icons.share),
-                                                        label:
-                                                            const Text('Share'))
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  }
-                                },
-                                child: const Text('Generate QRCode'))
+                                if (_formkey.currentState!.validate()) {
+                                  _showQRCodeDialog(context);
+                                }
+                              },
+                            ),
                           ],
                         ),
                       ),

@@ -1,0 +1,2 @@
+C:/Users/dolapo/Documents/Work/flutterprojects/qrcodegenerator/android/app/.cxx/RelWithDebInfo/6k2l4z4a/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/dolapo/Documents/Work/flutterprojects/qrcodegenerator/android/app/.cxx/RelWithDebInfo/6k2l4z4a/armeabi-v7a/CMakeFiles/rebuild_cache.dir
