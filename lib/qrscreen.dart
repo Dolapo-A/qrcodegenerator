@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -109,7 +107,6 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
       if (Platform.isAndroid) {
         var status = await Permission.storage.request();
         if (!status.isGranted) {
-          print("Storage permission Denied");
           return;
         }
       }
@@ -136,7 +133,6 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
       //   );
       // }
     } catch (e) {
-      print(e);
       showFailureSnackBar(e.toString());
     }
   }
