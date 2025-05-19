@@ -116,22 +116,6 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
       );
 
       showSuccessSnackBar("${_qrCodeName.text}_Qrcode Saved to Gallery");
-
-      // if (result['isSuccess']) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     SnackBar(
-      //       content: Text("${_qrCodeName.text}_Qrcode Saved to Gallery"),
-      //       backgroundColor: Colors.green,
-      //     ),
-      //   );
-      // } else {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     SnackBar(
-      //       content: Text("Unable to save ${_qrCodeName.text}_Qrcode"),
-      //       backgroundColor: Colors.red,
-      //     ),
-      //   );
-      // }
     } catch (e) {
       showFailureSnackBar(e.toString());
     }
@@ -152,7 +136,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
             // ignore: sized_box_for_whitespace
             child: SingleChildScrollView(
               child: SizedBox(
-                width: 35.w,
+                width: 40.w,
                 height: 400,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -201,7 +185,6 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                               ),
                               QrImageView(
                                 data: qrData,
-
                                 eyeStyle: const QrEyeStyle(
                                     eyeShape: QrEyeShape.square,
                                     color: Colors.blue),
@@ -233,7 +216,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                           onPressed: () => {shareQRCode()}),
                     ),
                     const SizedBox(
-                      height: 5,
+                      height: 10,
                     ),
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 500),
@@ -256,7 +239,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          shadowColor: Colors.transparent,
+          // shadowColor: Colors.transparent,
           flexibleSpace: Container(
             decoration: const BoxDecoration(
                 gradient: LinearGradient(
@@ -295,21 +278,21 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
             child: Padding(
               padding: const EdgeInsets.only(right: 40.0, left: 40.0),
               child: Center(
-                child: SingleChildScrollView(
-                  child: Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.black54),
-                        color: Colors.black26),
-                    // width: SizeConfig().widthSize(context, 70),
-                    // height: SizeConfig().heigthSize(context, 50),
-                    width: 350,
-                    height: 330,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          top: 20, right: 20, bottom: 20, left: 20),
-                      child: Form(
-                        key: _formkey,
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey),
+                      color: Colors.white),
+                  // width: SizeConfig().widthSize(context, 70),
+                  // height: SizeConfig().heigthSize(context, 50),
+                  width: 350,
+                  height: 350,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        top: 20, right: 20, bottom: 20, left: 20),
+                    child: Form(
+                      key: _formkey,
+                      child: SingleChildScrollView(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -319,7 +302,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                               child: Text(
                                 'QRCode Title:',
                                 style: TextStyle(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     fontSize: 16,
                                     fontWeight: FontWeight.normal),
                               ),
@@ -331,7 +314,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                               controller: _qrCodeName,
                               keyboardType: TextInputType.text,
                               style: const TextStyle(
-                                  color: Colors.white,
+                                  color: Colors.black,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w300),
                               textCapitalization: TextCapitalization.words,
@@ -342,11 +325,12 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                                   vertical: 15,
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white70),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey, width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.white, width: 1),
+                                  borderSide: BorderSide(
+                                      color: Colors.lightBlueAccent, width: 2),
                                 ),
                               ),
                             ),
@@ -358,7 +342,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                               child: Text(
                                 'URL: ',
                                 style: TextStyle(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     fontSize: 16,
                                     fontWeight: FontWeight.normal),
                               ),
@@ -370,19 +354,20 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                               controller: _urlLink,
                               keyboardType: TextInputType.url,
                               style: const TextStyle(
-                                  color: Colors.white, fontSize: 16),
+                                  color: Colors.black, fontSize: 16),
                               decoration: InputDecoration(
                                 isDense: true,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 10,
                                   vertical: 15,
                                 ),
-                                enabledBorder: const OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white70),
-                                ),
-                                focusedBorder: const OutlineInputBorder(
+                                enabledBorder: OutlineInputBorder(
                                   borderSide:
-                                      BorderSide(color: Colors.white, width: 1),
+                                      BorderSide(color: Colors.grey, width: 1),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: Colors.lightBlueAccent, width: 2),
                                 ),
                                 errorBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(5.0),
@@ -403,7 +388,7 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                               },
                             ),
                             const SizedBox(
-                              height: 20,
+                              height: 30,
                             ),
                             CustomElevatedButton(
                               label: "Generate QRCode",

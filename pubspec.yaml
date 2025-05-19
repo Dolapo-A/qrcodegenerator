@@ -20,6 +20,7 @@ dependencies:
   # image_gallery_saver: ^2.0.3
   flutter_image_gallery_saver: ^0.0.2
   permission_handler: ^12.0.0+1
+  google_mobile_ads: ^6.0.0
 
 msix_config:
   display_name: Text QRcode Generator
