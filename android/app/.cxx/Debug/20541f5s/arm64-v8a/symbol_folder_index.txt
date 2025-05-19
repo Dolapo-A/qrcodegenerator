@@ -1,0 +1,1 @@
+C:\Users\dolapo\Documents\Work\flutterprojects\qrcodegenerator\build\app\intermediates\cxx\Debug\20541f5s\obj\arm64-v8a
