@@ -5,9 +5,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_image_gallery_saver/flutter_image_gallery_saver.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qrcodegenerator/data/ad_helper.dart';
 import 'package:qrcodegenerator/widgets/Button.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sizer/sizer.dart';
@@ -41,6 +43,68 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
   final TextEditingController _qrCodeName = TextEditingController();
   final TextEditingController _urlLink = TextEditingController();
   String qrData = '';
+  //for banner ads
+  late BannerAd _bottomBannerAd;
+  bool _isBottomBannerAdLoaded = false;
+
+// //for interstitial ads
+  InterstitialAd? _interstitialAd;
+  int _numInterstitialLoadAttempts = 0;
+  int maxFailedLoadAttempts = 3;
+
+  @override
+  void initState() {
+    super.initState();
+    _createInterstitialAd();
+    _createBottomBannerAd();
+  }
+
+  static AdRequest request = const AdRequest(
+    keywords: <String>['foo', 'bar'],
+    contentUrl: 'http://foo.com/bar.html',
+    nonPersonalizedAds: true,
+  );
+
+  void _createInterstitialAd() {
+    InterstitialAd.load(
+        adUnitId: AdHelper.interstitialAdUnitId,
+        request: request,
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (InterstitialAd ad) {
+            print('$ad loaded');
+            _interstitialAd = ad;
+            _numInterstitialLoadAttempts = 0;
+            _interstitialAd!.setImmersiveMode(true);
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            print('InterstitialAd failed to load: $error.');
+            _numInterstitialLoadAttempts += 1;
+            _interstitialAd = null;
+            if (_numInterstitialLoadAttempts < maxFailedLoadAttempts) {
+              _createInterstitialAd();
+            }
+          },
+        ));
+  }
+
+  void _createBottomBannerAd() {
+    _bottomBannerAd = BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBottomBannerAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+        },
+      ),
+    );
+    _bottomBannerAd.load();
+  }
 
   void showFailureSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -62,6 +126,13 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
         margin: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _bottomBannerAd.dispose();
+    _interstitialAd?.dispose();
   }
 
   shareQRCode() async {
@@ -262,6 +333,13 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
             ),
           ),
         ),
+        bottomNavigationBar: _isBottomBannerAdLoaded
+            ? SizedBox(
+                height: _bottomBannerAd.size.height.toDouble(),
+                width: _bottomBannerAd.size.width.toDouble(),
+                child: AdWidget(ad: _bottomBannerAd),
+              )
+            : null,
         body: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
@@ -286,10 +364,10 @@ class _QRCodeGeneratorState extends State<QRCodeGenerator> {
                   // width: SizeConfig().widthSize(context, 70),
                   // height: SizeConfig().heigthSize(context, 50),
                   width: 350,
-                  height: 350,
+                  height: 340,
                   child: Padding(
                     padding: const EdgeInsets.only(
-                        top: 20, right: 20, bottom: 20, left: 20),
+                        top: 30, right: 20, bottom: 20, left: 20),
                     child: Form(
                       key: _formkey,
                       child: SingleChildScrollView(
